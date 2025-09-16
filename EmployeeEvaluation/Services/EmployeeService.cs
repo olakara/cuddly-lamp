@@ -43,8 +43,7 @@ public class EmployeeService
 
     public List<Employee> GetAllEmployees()
     {
-        Log.Debug("Retrieving all employees");
-        Log.Information("Retrieved {EmployeeCount} employees", _employees.Count);
+        Log.Information("Retrieving all employees. Retrieved {EmployeeCount} employees.", _employees.Count);
         return _employees.ToList();
     }
 
