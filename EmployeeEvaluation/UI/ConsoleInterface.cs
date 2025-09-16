@@ -1,5 +1,6 @@
 using EmployeeEvaluation.Models;
 using EmployeeEvaluation.Services;
+using Serilog;
 
 namespace EmployeeEvaluation.UI;
 
@@ -12,10 +13,12 @@ public class ConsoleInterface
     {
         _employeeService = employeeService;
         _evaluationService = evaluationService;
+        Log.Information("ConsoleInterface initialized");
     }
 
     public void Run()
     {
+        Log.Information("Console application started");
         Console.WriteLine("=== Employee Evaluation System ===");
         Console.WriteLine();
 
@@ -23,6 +26,7 @@ public class ConsoleInterface
         {
             ShowMainMenu();
             var choice = Console.ReadLine()?.Trim();
+            Log.Information("User selected menu option: {Choice}", choice ?? "null");
 
             try
             {
@@ -41,15 +45,18 @@ public class ConsoleInterface
                         ViewEmployees();
                         break;
                     case "5":
+                        Log.Information("User selected exit option");
                         Console.WriteLine("Thank you for using the Employee Evaluation System!");
                         return;
                     default:
+                        Log.Warning("User selected invalid menu option: {Choice}", choice);
                         Console.WriteLine("Invalid choice. Please try again.");
                         break;
                 }
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Error occurred during menu operation for choice: {Choice}", choice);
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
@@ -74,12 +81,19 @@ public class ConsoleInterface
 
     private void PerformSelfEvaluation()
     {
+        Log.Information("Starting self-evaluation process");
         Console.WriteLine("\n=== Employee Self-Evaluation ===");
         
         var employee = SelectEmployee();
-        if (employee == null) return;
+        if (employee == null) 
+        {
+            Log.Information("Self-evaluation cancelled - no employee selected");
+            return;
+        }
 
         var (quarter, year) = GetQuarterAndYear();
+        Log.Information("Self-evaluation initiated for {EmployeeName} ({EmployeeNumber}) Q{Quarter} {Year}", 
+            employee.Name, employee.EmployeeNumber, quarter, year);
         
         Console.WriteLine($"\nSelf-evaluation for {employee.Name} - {GetQuarterDisplay(quarter, year)}");
         Console.WriteLine("Please rate yourself on a scale of 1-5 for each category:");
@@ -96,6 +110,7 @@ public class ConsoleInterface
                 if (int.TryParse(Console.ReadLine(), out int score) && score >= 1 && score <= 5)
                 {
                     scores[category] = score;
+                    Log.Debug("Self-evaluation score entered for {Category}: {Score}", category.GetDisplayName(), score);
                     break;
                 }
                 Console.WriteLine("Please enter a valid score between 1 and 5.");
@@ -103,6 +118,8 @@ public class ConsoleInterface
         }
 
         _evaluationService.SubmitSelfEvaluation(employee.EmployeeNumber, quarter, year, scores);
+        Log.Information("Self-evaluation successfully submitted for {EmployeeName} ({EmployeeNumber}) Q{Quarter} {Year}", 
+            employee.Name, employee.EmployeeNumber, quarter, year);
         Console.WriteLine("\nSelf-evaluation submitted successfully!");
     }
 
