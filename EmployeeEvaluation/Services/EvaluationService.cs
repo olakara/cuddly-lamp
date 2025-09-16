@@ -6,6 +6,14 @@ namespace EmployeeEvaluation.Services;
 public class EvaluationService
 {
     private readonly List<Evaluation> _evaluations = new();
+    private readonly DataPersistenceService _dataPersistenceService;
+    private readonly EmployeeService _employeeService;
+
+    public EvaluationService(DataPersistenceService dataPersistenceService, EmployeeService employeeService)
+    {
+        _dataPersistenceService = dataPersistenceService;
+        _employeeService = employeeService;
+    }
 
     public Evaluation CreateEvaluation(string employeeNumber, int quarter, int year)
     {
@@ -91,8 +99,18 @@ public class EvaluationService
         ValidateScores(scores);
         evaluation.SelfScores = new Dictionary<EvaluationCategory, int>(scores);
         
+
+        // Save to JSON file after self-evaluation completion
+        var employee = _employeeService.GetEmployee(employeeNumber);
+        if (employee != null)
+        {
+            // Use synchronous version for simplicity in console app
+            _dataPersistenceService.SaveEvaluationAsync(evaluation, employee).Wait();
+        }
+
         Log.Information("Successfully submitted self-evaluation for employee {EmployeeNumber} Q{Quarter} {Year} with scores: {@Scores}", 
             employeeNumber, quarter, year, scores);
+
     }
 
     public void SubmitManagerEvaluation(string employeeNumber, int quarter, int year, 
@@ -119,8 +137,18 @@ public class EvaluationService
         evaluation.IsCompleted = true;
         evaluation.CompletedDate = DateTime.Now;
         
+
+        // Save to JSON file after manager evaluation completion
+        var employee = _employeeService.GetEmployee(employeeNumber);
+        if (employee != null)
+        {
+            // Use synchronous version for simplicity in console app
+            _dataPersistenceService.SaveEvaluationAsync(evaluation, employee).Wait();
+        }
+
         Log.Information("Successfully completed manager evaluation for employee {EmployeeNumber} Q{Quarter} {Year} with scores: {@Scores} and remarks: {Remarks}", 
             employeeNumber, quarter, year, scores, remarks);
+
     }
 
     private static void ValidateScores(Dictionary<EvaluationCategory, int> scores)

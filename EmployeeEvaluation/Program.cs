@@ -2,6 +2,12 @@
 using EmployeeEvaluation.UI;
 using Serilog;
 
+
+// Initialize services
+var employeeService = new EmployeeService();
+var dataPersistenceService = new DataPersistenceService();
+var evaluationService = new EvaluationService(dataPersistenceService, employeeService);
+
 // Configure Serilog with rolling file logging
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -13,6 +19,7 @@ Log.Logger = new LoggerConfiguration()
         retainedFileCountLimit: 10,
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
+
 
 try
 {

@@ -228,3 +228,6 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+# Application data files
+evaluations.json
