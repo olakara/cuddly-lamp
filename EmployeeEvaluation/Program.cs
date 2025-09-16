@@ -3,7 +3,8 @@ using EmployeeEvaluation.UI;
 
 // Initialize services
 var employeeService = new EmployeeService();
-var evaluationService = new EvaluationService();
+var dataPersistenceService = new DataPersistenceService();
+var evaluationService = new EvaluationService(dataPersistenceService, employeeService);
 
 // Create and run the console interface
 var consoleInterface = new ConsoleInterface(employeeService, evaluationService);
